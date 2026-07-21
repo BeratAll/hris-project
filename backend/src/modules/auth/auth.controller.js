@@ -64,7 +64,7 @@ const logout = async (_req, res) => {
   res.cookie('access_token', '', {
     httpOnly: true,
     secure: config.env === 'production',
-    sameSite: 'strict',
+    sameSite: config.env === 'production' ? 'strict' : 'lax',
     expires: new Date(0),
   });
 
@@ -102,7 +102,7 @@ const changePassword = async (req, res) => {
   res.cookie('access_token', '', {
     httpOnly: true,
     secure: config.env === 'production',
-    sameSite: 'strict',
+    sameSite: config.env === 'production' ? 'strict' : 'lax',
     expires: new Date(0),
   });
 
@@ -120,10 +120,12 @@ const changePassword = async (req, res) => {
  * @param {string} token - JWT token
  */
 const setCookieToken = (res, token) => {
+  const isProduction = config.env === 'production';
+
   const cookieOptions = {
     httpOnly: true,                            // JavaScript erişimini engelle (XSS koruması)
-    secure: config.env === 'production',       // Production'da sadece HTTPS
-    sameSite: 'strict',                        // CSRF koruması
+    secure: isProduction,                      // Production'da sadece HTTPS
+    sameSite: isProduction ? 'strict' : 'lax', // Dev: cross-origin izin, Prod: CSRF koruması
     maxAge: config.jwt.cookieExpiresIn * 24 * 60 * 60 * 1000, // Gün → milisaniye
     path: '/',
   };

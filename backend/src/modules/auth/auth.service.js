@@ -88,11 +88,12 @@ const login = async ({ email, password }, ipAddress = null) => {
  * @param {string} userData.email - E-posta
  * @param {string} userData.password - Düz metin şifre
  * @param {string} [userData.role='employee'] - Rol
+ * @param {string} [userData.department=null] - Departman adı
  * @param {string} [ipAddress] - İstemci IP adresi
  * @returns {Promise<{user: Object, token: string}>}
  * @throws {AppError} E-posta zaten kullanılıyorsa
  */
-const register = async ({ firstName, lastName, email, password, role }, ipAddress = null) => {
+const register = async ({ firstName, lastName, email, password, role, department }, ipAddress = null) => {
   // 1. E-posta benzersizlik kontrolü
   const existingUser = await authRepository.findByEmail(email);
 
@@ -110,6 +111,7 @@ const register = async ({ firstName, lastName, email, password, role }, ipAddres
     email,
     passwordHash,
     role,
+    department,
   });
 
   // 4. JWT token üret
@@ -148,37 +150,37 @@ const getProfile = async (userId) => {
  * Kullanıcı şifresini değiştirir.
  *
  * İş kuralları:
- * 1. Mevcut şifre doğru olmalı
- * 2. Yeni şifre hash'lenmeli
+ * 1. Kullanıcı mevcut olmalı
+ * 2. Mevcut şifre doğru olmalı
+ * 3. Yeni şifre hash'lenmeli
  *
  * @param {string} userId - Kullanıcı UUID
  * @param {string} currentPassword - Mevcut şifre
  * @param {string} newPassword - Yeni şifre
  * @param {string} [ipAddress] - İstemci IP adresi
  * @returns {Promise<void>}
- * @throws {AppError} Mevcut şifre yanlışsa
+ * @throws {AppError} Kullanıcı bulunamazsa veya mevcut şifre yanlışsa
  */
 const changePassword = async (userId, currentPassword, newPassword, ipAddress = null) => {
-  const user = await authRepository.findByEmail(
-    (await authRepository.findById(userId)).email
-  );
+  // 1. Kullanıcıyı password_hash ile getir (tek sorgu)
+  const user = await authRepository.findByIdWithPassword(userId);
 
   if (!user) {
     throw new AppError('Kullanıcı bulunamadı.', 404);
   }
 
-  // Mevcut şifre kontrolü
+  // 2. Mevcut şifre kontrolü
   const isCorrect = await bcrypt.compare(currentPassword, user.password_hash);
 
   if (!isCorrect) {
     throw new AppError('Mevcut şifreniz hatalı.', 401);
   }
 
-  // Yeni şifreyi hash'le ve güncelle
+  // 3. Yeni şifreyi hash'le ve güncelle
   const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
   await authRepository.updatePassword(userId, newHash);
 
-  // Audit log
+  // 4. Audit log
   createAuditEntry({
     userId,
     action: 'PASSWORD_CHANGED',
@@ -191,6 +193,7 @@ const changePassword = async (userId, currentPassword, newPassword, ipAddress = 
 
 /**
  * Kullanıcı bilgilerini içeren JWT token üretir.
+ * Payload: id, email, role (kullanıcının talep ettiği 3 alan).
  *
  * @param {Object} user - Kullanıcı objesi
  * @returns {string} JWT token
@@ -201,8 +204,6 @@ const generateToken = (user) => {
       id: user.id,
       email: user.email,
       role: user.role,
-      departmentId: user.department_id || null,
-      siteId: user.site_id || null,
     },
     config.jwt.secret,
     { expiresIn: config.jwt.expiresIn }

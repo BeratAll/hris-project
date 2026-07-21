@@ -240,9 +240,11 @@ export default function Sidebar({ open, onClose, variant = 'permanent' }) {
                         </ListItemIcon>
                         <ListItemText
                           primary={item.label}
-                          primaryTypographyProps={{
-                            fontSize: '0.825rem',
-                            fontWeight: isActive ? 600 : 400,
+                          slotProps={{
+                            primary: {
+                              fontSize: '0.825rem',
+                              fontWeight: isActive ? 600 : 400,
+                            },
                           }}
                         />
                       </ListItemButton>

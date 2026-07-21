@@ -42,8 +42,6 @@ const authenticate = (req, _res, next) => {
       id: decoded.id,
       email: decoded.email,
       role: decoded.role,
-      departmentId: decoded.departmentId || null,
-      siteId: decoded.siteId || null,
     };
 
     next();
