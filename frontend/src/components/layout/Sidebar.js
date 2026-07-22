@@ -40,8 +40,16 @@ import { selectUserRole } from '@/store/slices/authSlice';
 const SIDEBAR_WIDTH = 260;
 
 /**
- * Menü yapısı — her öğe rol tabanlı erişim kontrolüne sahip.
- * allowedRoles boşsa tüm roller erişebilir.
+ * Menü yapılandırması — Rol Bazlı Erişim Kontrolü (RBAC)
+ *
+ * Her menü öğesinin özellikleri:
+ * - label:        Menüde görünecek başlık
+ * - path:         Next.js route yolu
+ * - icon:         Material UI ikon bileşeni
+ * - allowedRoles: Bu öğeyi görebilecek roller (boş dizi = tüm roller)
+ *
+ * Roller: super_admin, hr_manager, hr_specialist, general_manager,
+ *         site_chief, dept_manager, finance, employee
  */
 const MENU_ITEMS = [
   {
@@ -51,7 +59,7 @@ const MENU_ITEMS = [
         label: 'Gösterge Paneli',
         path: '/dashboard',
         icon: <DashboardIcon />,
-        allowedRoles: [],
+        allowedRoles: [],  // Tüm roller görebilir
       },
     ],
   },
@@ -59,10 +67,10 @@ const MENU_ITEMS = [
     section: 'İnsan Kaynakları',
     items: [
       {
-        label: 'Personel Yönetimi',
+        label: 'Çalışan Listesi',
         path: '/employees',
         icon: <PeopleIcon />,
-        allowedRoles: ['super_admin', 'hr_manager', 'hr_specialist', 'general_manager'],
+        allowedRoles: ['super_admin', 'hr_manager', 'hr_specialist', 'general_manager', 'site_chief'],
       },
       {
         label: 'İzin Yönetimi',
@@ -99,10 +107,10 @@ const MENU_ITEMS = [
     section: 'Yönetim',
     items: [
       {
-        label: 'Raporlar',
-        path: '/reports',
+        label: 'Finans Raporları',
+        path: '/reports/finance',
         icon: <ReportIcon />,
-        allowedRoles: ['super_admin', 'hr_manager', 'general_manager', 'finance'],
+        allowedRoles: ['super_admin', 'finance', 'general_manager'],
       },
       {
         label: 'Denetim Kayıtları',
@@ -111,10 +119,10 @@ const MENU_ITEMS = [
         allowedRoles: ['super_admin', 'general_manager'],
       },
       {
-        label: 'Ayarlar',
+        label: 'Sistem Ayarları',
         path: '/settings',
         icon: <SettingsIcon />,
-        allowedRoles: ['super_admin'],
+        allowedRoles: ['super_admin'],  // Sadece Süper Admin
       },
     ],
   },
