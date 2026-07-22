@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS users (
     -- Organizasyonel Bilgiler
     role            user_role       NOT NULL DEFAULT 'employee',
     department      VARCHAR(100)    DEFAULT NULL,
+    location        VARCHAR(100)    DEFAULT NULL,
 
     -- Hesap Durumu
     is_active       BOOLEAN         NOT NULL DEFAULT true,
@@ -157,6 +158,56 @@ VALUES (
     'İnşaat'
 )
 ON CONFLICT (email) DO NOTHING;
+
+-- =============================================
+-- 7. LEAVES (İZİN TALEPLERİ) TABLOSU
+-- =============================================
+
+CREATE TYPE leave_status AS ENUM ('Bekliyor', 'Onaylandı', 'Reddedildi');
+
+CREATE TABLE IF NOT EXISTS leaves (
+    id              UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
+    employee_id     UUID            NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    leave_type      VARCHAR(50)     NOT NULL, -- Yıllık İzin, Sağlık İzni, Mazeret İzni
+    start_date      DATE            NOT NULL,
+    end_date        DATE            NOT NULL,
+    reason          TEXT            DEFAULT NULL,
+    status          leave_status    NOT NULL DEFAULT 'Bekliyor',
+    created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+-- Index'ler
+CREATE INDEX IF NOT EXISTS idx_leaves_employee_id ON leaves(employee_id);
+CREATE INDEX IF NOT EXISTS idx_leaves_status ON leaves(status);
+
+-- Trigger for leaves updated_at
+CREATE TRIGGER trg_leaves_updated_at
+    BEFORE UPDATE ON leaves
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Seed Leaves
+-- (Employee ID lookup queries inside sub-selects for consistency)
+INSERT INTO leaves (employee_id, leave_type, start_date, end_date, reason, status)
+VALUES (
+    (SELECT id FROM users WHERE email = 'ik@hris.com' LIMIT 1),
+    'Yıllık İzin',
+    '2026-07-25',
+    '2026-08-05',
+    'Yaz tatili planı',
+    'Onaylandı'
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO leaves (employee_id, leave_type, start_date, end_date, reason, status)
+VALUES (
+    (SELECT id FROM users WHERE email = 'calisan@hris.com' LIMIT 1),
+    'Sağlık İzni',
+    '2026-08-01',
+    '2026-08-03',
+    'Göz ameliyatı sonrası dinlenme',
+    'Bekliyor'
+) ON CONFLICT DO NOTHING;
 
 -- =============================================
 -- TAMAMLANDI

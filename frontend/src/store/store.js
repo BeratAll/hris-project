@@ -1,5 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
+import employeeReducer from './slices/employeeSlice';
+import leaveReducer from './slices/leaveSlice';
 
 /**
  * Redux Store Konfigürasyonu
@@ -12,9 +14,8 @@ import authReducer from './slices/authSlice';
 const store = configureStore({
   reducer: {
     auth: authReducer,
-    // Gelecek modüller:
-    // employees: employeeReducer,
-    // leaves: leaveReducer,
+    employees: employeeReducer,
+    leaves: leaveReducer,
     // departments: departmentReducer,
   },
 

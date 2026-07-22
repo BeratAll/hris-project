@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
   Typography,
@@ -20,6 +21,9 @@ import {
   MenuItem,
   Stack,
   TextField,
+  Alert,
+  Snackbar,
+  DialogContentText,
 } from '@mui/material';
 import {
   DataGrid,
@@ -30,89 +34,90 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-
-/**
- * Mock Çalışan Verisi (Mock Employee Data)
- * Backend entegrasyonu tamamlanana kadar gösterilecek veri seti.
- */
-const MOCK_EMPLOYEES = [
-  {
-    id: 'EMP-001',
-    fullName: 'Sistem Yöneticisi',
-    email: 'admin@hris.com',
-    department: 'Bilgi Teknolojileri',
-    location: 'Merkez Ofis',
-    isActive: true,
-  },
-  {
-    id: 'EMP-002',
-    fullName: 'Ayşe Yılmaz',
-    email: 'ik@hris.com',
-    department: 'İnsan Kaynakları',
-    location: 'Merkez Ofis',
-    isActive: true,
-  },
-  {
-    id: 'EMP-003',
-    fullName: 'Mehmet Demir',
-    email: 'santiye@hris.com',
-    department: 'Şantiye Yönetimi',
-    location: 'Şantiye A',
-    isActive: true,
-  },
-  {
-    id: 'EMP-004',
-    fullName: 'Ali Kaya',
-    email: 'calisan@hris.com',
-    department: 'İnşaat',
-    location: 'Şantiye A',
-    isActive: true,
-  },
-  {
-    id: 'EMP-005',
-    fullName: 'Zeynep Çelik',
-    email: 'zeynep.celik@hris.com',
-    department: 'Finans',
-    location: 'Merkez Ofis',
-    isActive: false,
-  },
-  {
-    id: 'EMP-006',
-    fullName: 'Mustafa Öztürk',
-    email: 'mustafa.ozturk@hris.com',
-    department: 'İş Güvenliği',
-    location: 'Şantiye B',
-    isActive: true,
-  },
-];
+import {
+  fetchEmployees,
+  addEmployee,
+  updateEmployee,
+  deleteEmployee,
+  selectAllEmployees,
+  selectEmployeesStatus,
+  selectEmployeesError,
+  clearEmployeeError,
+} from '@/store/slices/employeeSlice';
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState(MOCK_EMPLOYEES);
+  const dispatch = useDispatch();
+
+  // Redux State
+  const employees = useSelector(selectAllEmployees);
+  const status = useSelector(selectEmployeesStatus);
+  const employeeError = useSelector(selectEmployeesError);
+
+  // Local State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newEmployee, setNewEmployee] = useState({
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const [formValues, setFormValues] = useState({
     fullName: '',
     email: '',
     department: '',
     location: '',
   });
 
+  // Sayfa yüklendiğinde çalışanları çek
+  useEffect(() => {
+    dispatch(fetchEmployees());
+  }, [dispatch]);
+
+  // Hata durumunda Snackbar bildirimi göster
+  useEffect(() => {
+    if (employeeError) {
+      setSnackbarOpen(true);
+    }
+  }, [employeeError]);
+
   /**
    * Çalışan Düzenleme Buton Tıklaması
    * @param {Object} employee 
    */
   const handleEdit = (employee) => {
-    console.log('Edit employee:', employee);
-    alert(`Düzenle: ${employee.fullName}`);
+    setSelectedEmployee(employee);
+    setFormValues({
+      fullName: employee.fullName,
+      email: employee.email,
+      department: employee.department,
+      location: employee.location,
+    });
+    setIsModalOpen(true);
   };
 
   /**
    * Çalışan Silme Buton Tıklaması
    * @param {Object} employee 
    */
-  const handleDelete = (employee) => {
-    console.log('Delete employee:', employee);
-    if (confirm(`${employee.fullName} isimli personeli silmek istediğinize emin misiniz?`)) {
-      setEmployees((prev) => prev.filter((item) => item.id !== employee.id));
+  const handleDeleteClick = (employee) => {
+    setEmployeeToDelete(employee);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  /**
+   * Silme İşlemini Onaylama ve Thunk Dispatch
+   */
+  const handleConfirmDelete = async () => {
+    if (employeeToDelete) {
+      const result = await dispatch(deleteEmployee(employeeToDelete.id));
+      if (deleteEmployee.fulfilled.match(result)) {
+        setSuccessMessage('Çalışan başarıyla silindi.');
+        setSuccessSnackbarOpen(true);
+      }
+      setIsDeleteConfirmOpen(false);
+      setEmployeeToDelete(null);
     }
   };
 
@@ -120,6 +125,13 @@ export default function EmployeesPage() {
    * Yeni Çalışan Ekleme Buton Tıklaması (Modali açar)
    */
   const handleOpenModal = () => {
+    setSelectedEmployee(null);
+    setFormValues({
+      fullName: '',
+      email: '',
+      department: '',
+      location: '',
+    });
     setIsModalOpen(true);
   };
 
@@ -127,13 +139,15 @@ export default function EmployeesPage() {
    * Modali Kapatma
    */
   const handleCloseModal = () => {
-    setNewEmployee({
+    setFormValues({
       fullName: '',
       email: '',
       department: '',
       location: '',
     });
+    setSelectedEmployee(null);
     setIsModalOpen(false);
+    dispatch(clearEmployeeError());
   };
 
   /**
@@ -142,38 +156,48 @@ export default function EmployeesPage() {
    */
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setNewEmployee((prev) => ({
+    setFormValues((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
   /**
-   * Yeni Çalışanı Kaydeder
+   * Formu Kaydeder veya Günceller (Redux thunk dispatch eder)
    * @param {React.FormEvent} e 
    */
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    console.log('Yeni çalışan kaydediliyor...', newEmployee);
 
-    // Yeni çalışan için geçici benzersiz sicil no üretimi
-    const nextId = `EMP-${String(employees.length + 1).padStart(3, '0')}`;
+    if (selectedEmployee) {
+      // Güncelleme Modu (Edit Mode)
+      const result = await dispatch(
+        updateEmployee({
+          id: selectedEmployee.id,
+          employeeData: formValues,
+        })
+      );
 
-    // Yeni çalışanı mock state'e ekle
-    setEmployees((prev) => [
-      ...prev,
-      {
-        id: nextId,
-        fullName: newEmployee.fullName,
-        email: newEmployee.email,
-        department: newEmployee.department,
-        location: newEmployee.location,
-        isActive: true,
-      },
-    ]);
+      if (updateEmployee.fulfilled.match(result)) {
+        setSuccessMessage('Çalışan bilgileri güncellendi.');
+        setSuccessSnackbarOpen(true);
+        handleCloseModal();
+      }
+    } else {
+      // Ekleme Modu (Create Mode)
+      const result = await dispatch(addEmployee(formValues));
 
-    // Modali kapat ve form state'ini sıfırla
-    handleCloseModal();
+      if (addEmployee.fulfilled.match(result)) {
+        setSuccessMessage('Yeni çalışan başarıyla eklendi!');
+        setSuccessSnackbarOpen(true);
+        handleCloseModal();
+      }
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+    dispatch(clearEmployeeError());
   };
 
   // MUI DataGrid Sütun Tanımları (Columns Definition)
@@ -282,7 +306,7 @@ export default function EmployeesPage() {
             <Tooltip title="Sil">
               <IconButton
                 size="small"
-                onClick={() => handleDelete(params.row)}
+                onClick={() => handleDeleteClick(params.row)}
                 color="error"
                 sx={{ '&:hover': { bgcolor: 'error.lighter' } }}
               >
@@ -329,6 +353,13 @@ export default function EmployeesPage() {
         </Button>
       </Box>
 
+      {/* Hata Durumunda Bildirim */}
+      {employeeError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {employeeError}
+        </Alert>
+      )}
+
       {/* Tablo Alanı: DataGrid */}
       <Paper
         variant="outlined"
@@ -344,6 +375,7 @@ export default function EmployeesPage() {
         <DataGrid
           rows={employees}
           columns={columns}
+          loading={status === 'loading' && employees.length === 0}
           initialState={{
             pagination: {
               paginationModel: { page: 0, pageSize: 10 },
@@ -380,26 +412,31 @@ export default function EmployeesPage() {
         />
       </Paper>
 
-      {/* Yeni Çalışan Ekleme Modali (Dialog) */}
+      {/* Yeni Çalışan Ekleme / Düzenleme Modali (Dialog) */}
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         fullWidth
         maxWidth="xs"
-        aria-labelledby="add-employee-dialog-title"
+        aria-labelledby="employee-dialog-title"
       >
-        <DialogTitle id="add-employee-dialog-title" sx={{ fontWeight: 700 }}>
-          Yeni Çalışan Ekle
+        <DialogTitle id="employee-dialog-title" sx={{ fontWeight: 700 }}>
+          {selectedEmployee ? 'Çalışanı Düzenle' : 'Yeni Çalışan Ekle'}
         </DialogTitle>
         <Box component="form" onSubmit={handleSave}>
           <DialogContent dividers>
             <Stack spacing={2.5} sx={{ py: 1 }}>
+              {employeeError && (
+                <Alert severity="error" sx={{ mb: 1 }}>
+                  {employeeError}
+                </Alert>
+              )}
               <TextField
                 required
                 fullWidth
                 label="Ad Soyad"
                 name="fullName"
-                value={newEmployee.fullName}
+                value={formValues.fullName}
                 onChange={handleFormChange}
               />
               <TextField
@@ -408,7 +445,7 @@ export default function EmployeesPage() {
                 type="email"
                 label="E-posta"
                 name="email"
-                value={newEmployee.email}
+                value={formValues.email}
                 onChange={handleFormChange}
               />
               <FormControl fullWidth required>
@@ -417,7 +454,7 @@ export default function EmployeesPage() {
                   labelId="department-select-label"
                   label="Departman"
                   name="department"
-                  value={newEmployee.department}
+                  value={formValues.department}
                   onChange={handleFormChange}
                 >
                   <MenuItem value="Bilgi Teknolojileri">Bilgi Teknolojileri</MenuItem>
@@ -434,7 +471,7 @@ export default function EmployeesPage() {
                   labelId="location-select-label"
                   label="Şantiye / Lokasyon"
                   name="location"
-                  value={newEmployee.location}
+                  value={formValues.location}
                   onChange={handleFormChange}
                 >
                   <MenuItem value="Merkez Ofis">Merkez Ofis</MenuItem>
@@ -445,15 +482,59 @@ export default function EmployeesPage() {
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, py: 2 }}>
-            <Button onClick={handleCloseModal} color="inherit" sx={{ fontWeight: 600 }}>
+            <Button onClick={handleCloseModal} color="inherit" sx={{ fontWeight: 600 }} disabled={status === 'loading'}>
               İptal
             </Button>
-            <Button type="submit" variant="contained" sx={{ fontWeight: 600 }}>
-              Kaydet
+            <Button type="submit" variant="contained" sx={{ fontWeight: 600 }} disabled={status === 'loading'}>
+              {status === 'loading' ? 'Kaydediliyor...' : selectedEmployee ? 'Güncelle' : 'Kaydet'}
             </Button>
           </DialogActions>
         </Box>
       </Dialog>
+
+      {/* Silme Onay Modali (Delete Confirmation Dialog) */}
+      <Dialog
+        open={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        aria-labelledby="delete-confirm-dialog-title"
+        aria-describedby="delete-confirm-dialog-description"
+      >
+        <DialogTitle id="delete-confirm-dialog-title" sx={{ fontWeight: 700 }}>
+          Personeli Sil
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-confirm-dialog-description">
+            <strong>{employeeToDelete?.fullName}</strong> isimli personeli silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setIsDeleteConfirmOpen(false)} color="inherit" sx={{ fontWeight: 600 }}>
+            İptal
+          </Button>
+          <Button onClick={handleConfirmDelete} variant="contained" color="error" sx={{ fontWeight: 600 }} autoFocus>
+            Evet, Sil
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar Hata Bildirimi */}
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+          {employeeError}
+        </Alert>
+      </Snackbar>
+
+      {/* Snackbar Başarı Bildirimi */}
+      <Snackbar
+        open={successSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSuccessSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSuccessSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

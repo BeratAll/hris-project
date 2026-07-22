@@ -15,6 +15,8 @@ const apiResponse = require('./utils/apiResponse.util');
 
 // --- Rota Modülleri ---
 const authRoutes = require('./modules/auth/auth.routes');
+const employeeRoutes = require('./modules/employees/employees.routes');
+const leaveRoutes = require('./modules/leaves/leaves.routes');
 
 // --- Express Uygulaması ---
 const app = express();
@@ -101,9 +103,8 @@ app.get('/health', (_req, res) => {
 
 // Tüm modül rotaları API prefix altında monte edilir
 app.use(`${config.apiPrefix}/auth`, authRoutes);
-
-// Gelecek modüller buraya eklenecek:
-// app.use(`${config.apiPrefix}/employees`, employeeRoutes);
+app.use(`${config.apiPrefix}/employees`, employeeRoutes);
+app.use(`${config.apiPrefix}/leaves`, leaveRoutes);
 // app.use(`${config.apiPrefix}/leaves`, leaveRoutes);
 // app.use(`${config.apiPrefix}/payroll`, payrollRoutes);
 // app.use(`${config.apiPrefix}/departments`, departmentRoutes);

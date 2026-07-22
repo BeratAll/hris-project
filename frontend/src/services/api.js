@@ -121,4 +121,12 @@ export const employeesAPI = {
   delete: (id) => api.delete(`/employees/${id}`),
 };
 
+/**
+ * Leaves API — İzin talepleri endpoint'leri
+ */
+export const leavesAPI = {
+  getAll: () => api.get('/leaves'),
+  create: (data) => api.post('/leaves', data),
+};
+
 export default api;
