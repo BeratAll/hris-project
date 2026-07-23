@@ -210,6 +210,52 @@ VALUES (
 ) ON CONFLICT DO NOTHING;
 
 -- =============================================
+-- 8. PAYROLLS (MAAŞ BORDROLARI) TABLOSU
+-- =============================================
+
+CREATE TYPE payroll_status AS ENUM ('Ödendi', 'Bekliyor');
+
+CREATE TABLE IF NOT EXISTS payrolls (
+    id              UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
+    employee_id     UUID            NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    period          VARCHAR(50)     NOT NULL, -- Temmuz 2026
+    gross_salary    NUMERIC(12,2)   NOT NULL,
+    net_salary      NUMERIC(12,2)   NOT NULL,
+    status          payroll_status  NOT NULL DEFAULT 'Bekliyor',
+    created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+-- Index'ler
+CREATE INDEX IF NOT EXISTS idx_payrolls_employee_id ON payrolls(employee_id);
+CREATE INDEX IF NOT EXISTS idx_payrolls_status ON payrolls(status);
+
+-- Trigger for payrolls updated_at
+CREATE TRIGGER trg_payrolls_updated_at
+    BEFORE UPDATE ON payrolls
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Seed Payrolls
+INSERT INTO payrolls (employee_id, period, gross_salary, net_salary, status)
+VALUES (
+    (SELECT id FROM users WHERE email = 'ik@hris.com' LIMIT 1),
+    'Temmuz 2026',
+    65000,
+    48500,
+    'Ödendi'
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO payrolls (employee_id, period, gross_salary, net_salary, status)
+VALUES (
+    (SELECT id FROM users WHERE email = 'calisan@hris.com' LIMIT 1),
+    'Temmuz 2026',
+    45000,
+    34200,
+    'Bekliyor'
+) ON CONFLICT DO NOTHING;
+
+-- =============================================
 -- TAMAMLANDI
 -- =============================================
 -- Test kullanıcıları:

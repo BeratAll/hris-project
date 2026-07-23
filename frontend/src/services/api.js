@@ -129,4 +129,19 @@ export const leavesAPI = {
   create: (data) => api.post('/leaves', data),
 };
 
+/**
+ * Payroll API — Maaş bordroları endpoint'leri
+ */
+export const payrollAPI = {
+  getAll: () => api.get('/payroll'),
+  create: (data) => api.post('/payroll', data),
+};
+
+/**
+ * Dashboard API — Gösterge paneli istatistikleri endpoint'leri
+ */
+export const dashboardAPI = {
+  getStats: () => api.get('/dashboard/stats'),
+};
+
 export default api;

@@ -2,6 +2,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import employeeReducer from './slices/employeeSlice';
 import leaveReducer from './slices/leaveSlice';
+import payrollReducer from './slices/payrollSlice';
+import dashboardReducer from './slices/dashboardSlice';
 
 /**
  * Redux Store Konfigürasyonu
@@ -16,6 +18,8 @@ const store = configureStore({
     auth: authReducer,
     employees: employeeReducer,
     leaves: leaveReducer,
+    payroll: payrollReducer,
+    dashboard: dashboardReducer,
     // departments: departmentReducer,
   },
 

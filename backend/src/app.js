@@ -17,6 +17,8 @@ const apiResponse = require('./utils/apiResponse.util');
 const authRoutes = require('./modules/auth/auth.routes');
 const employeeRoutes = require('./modules/employees/employees.routes');
 const leaveRoutes = require('./modules/leaves/leaves.routes');
+const payrollRoutes = require('./modules/payroll/payroll.routes');
+const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 
 // --- Express Uygulaması ---
 const app = express();
@@ -105,6 +107,8 @@ app.get('/health', (_req, res) => {
 app.use(`${config.apiPrefix}/auth`, authRoutes);
 app.use(`${config.apiPrefix}/employees`, employeeRoutes);
 app.use(`${config.apiPrefix}/leaves`, leaveRoutes);
+app.use(`${config.apiPrefix}/payroll`, payrollRoutes);
+app.use(`${config.apiPrefix}/dashboard`, dashboardRoutes);
 // app.use(`${config.apiPrefix}/leaves`, leaveRoutes);
 // app.use(`${config.apiPrefix}/payroll`, payrollRoutes);
 // app.use(`${config.apiPrefix}/departments`, departmentRoutes);
