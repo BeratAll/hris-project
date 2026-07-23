@@ -144,4 +144,24 @@ export const dashboardAPI = {
   getStats: () => api.get('/dashboard/stats'),
 };
 
+/**
+ * Departments API — Departman endpoint'leri
+ */
+export const departmentsAPI = {
+  getAll: () => api.get('/departments'),
+  create: (data) => api.post('/departments', data),
+  update: (id, data) => api.put(`/departments/${id}`, data),
+  delete: (id) => api.delete(`/departments/${id}`),
+};
+
+/**
+ * Sites API — Şantiye endpoint'leri
+ */
+export const sitesAPI = {
+  getAll: () => api.get('/sites'),
+  create: (data) => api.post('/sites', data),
+  update: (id, data) => api.put(`/sites/${id}`, data),
+  delete: (id) => api.delete(`/sites/${id}`),
+};
+
 export default api;

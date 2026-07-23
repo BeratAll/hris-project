@@ -48,6 +48,13 @@ const createEmployee = async ({ fullName, email, department, location }, creator
     location,
   });
 
+  // 4.1 Şantiye/Departman Geçmişi (Location History) kaydı oluştur
+  await employeesRepository.createHistoryRecord({
+    employeeId: employee.id,
+    department: employee.department,
+    location: employee.location,
+  });
+
   // 5. Denetim İzi (Audit Log) kaydı oluştur
   createAuditEntry({
     userId: creatorId,
@@ -81,6 +88,8 @@ const updateEmployee = async (id, { fullName, email, department, location }, cre
   }
 
   // 3. Güncelle
+  const activeHist = await employeesRepository.getActiveHistory(id);
+
   const employee = await employeesRepository.update(id, {
     firstName,
     lastName,
@@ -91,6 +100,19 @@ const updateEmployee = async (id, { fullName, email, department, location }, cre
 
   if (!employee) {
     throw new AppError('Çalışan bulunamadı.', 404);
+  }
+
+  // 3.1 Şantiye/Departman Geçmişi (Location History) güncelle
+  const hasChanged = !activeHist || activeHist.department !== department || activeHist.location !== location;
+  if (hasChanged) {
+    if (activeHist) {
+      await employeesRepository.closeHistoryRecord(activeHist.id);
+    }
+    await employeesRepository.createHistoryRecord({
+      employeeId: id,
+      department,
+      location,
+    });
   }
 
   // 4. Audit Log
@@ -114,6 +136,12 @@ const deleteEmployee = async (id, creatorId, ipAddress = null) => {
 
   if (!employee) {
     throw new AppError('Çalışan bulunamadı.', 404);
+  }
+
+  // Şantiye/Departman Geçmişi (Location History) aktif kaydını kapat
+  const activeHist = await employeesRepository.getActiveHistory(id);
+  if (activeHist) {
+    await employeesRepository.closeHistoryRecord(activeHist.id);
   }
 
   // Audit Log

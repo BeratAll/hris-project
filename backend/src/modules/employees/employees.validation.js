@@ -32,18 +32,16 @@ const createEmployeeSchema = {
       }),
     department: Joi.string()
       .trim()
-      .valid('Bilgi Teknolojileri', 'İnsan Kaynakları', 'Şantiye Yönetimi', 'İnşaat', 'Finans', 'İş Güvenliği')
+      .max(100)
       .required()
       .messages({
-        'any.only': 'Geçersiz departman.',
         'any.required': 'Departman zorunludur.',
       }),
     location: Joi.string()
       .trim()
-      .valid('Merkez Ofis', 'Şantiye A', 'Şantiye B')
+      .max(100)
       .required()
       .messages({
-        'any.only': 'Geçersiz lokasyon.',
         'any.required': 'Şantiye/Lokasyon zorunludur.',
       }),
   }),

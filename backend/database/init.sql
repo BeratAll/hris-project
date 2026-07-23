@@ -256,6 +256,64 @@ VALUES (
 ) ON CONFLICT DO NOTHING;
 
 -- =============================================
+-- 9. DEPARTMENTS & SITES TABLOLARI
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS departments (
+    id          UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name        VARCHAR(100)    NOT NULL UNIQUE,
+    is_active   BOOLEAN         NOT NULL DEFAULT true,
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sites (
+    id          UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name        VARCHAR(100)    NOT NULL UNIQUE,
+    is_active   BOOLEAN         NOT NULL DEFAULT true,
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+-- Seed Departments
+INSERT INTO departments (name) VALUES
+('Bilgi Teknolojileri'),
+('İnsan Kaynakları'),
+('Şantiye Yönetimi'),
+('İnşaat'),
+('Finans'),
+('İş Güvenliği')
+ON CONFLICT (name) DO NOTHING;
+
+-- Seed Sites
+INSERT INTO sites (name) VALUES
+('Merkez Ofis'),
+('Şantiye A'),
+('Şantiye B')
+ON CONFLICT (name) DO NOTHING;
+
+-- =============================================
+-- 10. EMPLOYEE LOCATION HISTORY TABLOSU
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS employee_location_history (
+    id              UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
+    employee_id     UUID            NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    department      VARCHAR(100)    DEFAULT NULL,
+    location        VARCHAR(100)    DEFAULT NULL,
+    start_date      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    end_date        TIMESTAMPTZ     DEFAULT NULL,
+    created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_emp_loc_hist_emp_id ON employee_location_history(employee_id);
+
+-- Seed initial history records from existing users
+INSERT INTO employee_location_history (employee_id, department, location, start_date)
+SELECT id, department, NULL, created_at FROM users
+ON CONFLICT DO NOTHING;
+
+-- =============================================
 -- TAMAMLANDI
 -- =============================================
 -- Test kullanıcıları:

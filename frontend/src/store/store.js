@@ -4,6 +4,8 @@ import employeeReducer from './slices/employeeSlice';
 import leaveReducer from './slices/leaveSlice';
 import payrollReducer from './slices/payrollSlice';
 import dashboardReducer from './slices/dashboardSlice';
+import departmentReducer from './slices/departmentSlice';
+import siteReducer from './slices/siteSlice';
 
 /**
  * Redux Store Konfigürasyonu
@@ -20,7 +22,8 @@ const store = configureStore({
     leaves: leaveReducer,
     payroll: payrollReducer,
     dashboard: dashboardReducer,
-    // departments: departmentReducer,
+    departments: departmentReducer,
+    sites: siteReducer,
   },
 
   // Middleware — serileştirilemez veri uyarılarını kontrol et

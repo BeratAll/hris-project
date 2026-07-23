@@ -44,6 +44,14 @@ import {
   selectEmployeesError,
   clearEmployeeError,
 } from '@/store/slices/employeeSlice';
+import {
+  fetchDepartments,
+  selectAllDepartments,
+} from '@/store/slices/departmentSlice';
+import {
+  fetchSites,
+  selectAllSites,
+} from '@/store/slices/siteSlice';
 
 export default function EmployeesPage() {
   const dispatch = useDispatch();
@@ -52,6 +60,8 @@ export default function EmployeesPage() {
   const employees = useSelector(selectAllEmployees);
   const status = useSelector(selectEmployeesStatus);
   const employeeError = useSelector(selectEmployeesError);
+  const departments = useSelector(selectAllDepartments);
+  const sites = useSelector(selectAllSites);
 
   // Local State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,9 +80,11 @@ export default function EmployeesPage() {
     location: '',
   });
 
-  // Sayfa yüklendiğinde çalışanları çek
+  // Sayfa yüklendiğinde verileri çek
   useEffect(() => {
     dispatch(fetchEmployees());
+    dispatch(fetchDepartments());
+    dispatch(fetchSites());
   }, [dispatch]);
 
   // Hata durumunda Snackbar bildirimi göster
@@ -457,12 +469,11 @@ export default function EmployeesPage() {
                   value={formValues.department}
                   onChange={handleFormChange}
                 >
-                  <MenuItem value="Bilgi Teknolojileri">Bilgi Teknolojileri</MenuItem>
-                  <MenuItem value="İnsan Kaynakları">İnsan Kaynakları</MenuItem>
-                  <MenuItem value="Şantiye Yönetimi">Şantiye Yönetimi</MenuItem>
-                  <MenuItem value="İnşaat">İnşaat</MenuItem>
-                  <MenuItem value="Finans">Finans</MenuItem>
-                  <MenuItem value="İş Güvenliği">İş Güvenliği</MenuItem>
+                  {departments.map((dept) => (
+                    <MenuItem key={dept.id} value={dept.name}>
+                      {dept.name}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
               <FormControl fullWidth required>
@@ -474,9 +485,11 @@ export default function EmployeesPage() {
                   value={formValues.location}
                   onChange={handleFormChange}
                 >
-                  <MenuItem value="Merkez Ofis">Merkez Ofis</MenuItem>
-                  <MenuItem value="Şantiye A">Şantiye A</MenuItem>
-                  <MenuItem value="Şantiye B">Şantiye B</MenuItem>
+                  {sites.map((site) => (
+                    <MenuItem key={site.id} value={site.name}>
+                      {site.name}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Stack>

@@ -73,4 +73,41 @@ const deleteById = async (id) => {
   return rows[0];
 };
 
-module.exports = { findAll, findByEmail, create, update, deleteById };
+const getActiveHistory = async (employeeId) => {
+  const { rows } = await db.query(
+    `SELECT id, department, location
+     FROM employee_location_history
+     WHERE employee_id = $1 AND end_date IS NULL
+     LIMIT 1`,
+    [employeeId]
+  );
+  return rows[0] || null;
+};
+
+const closeHistoryRecord = async (id) => {
+  await db.query(
+    `UPDATE employee_location_history
+     SET end_date = NOW()
+     WHERE id = $1`,
+    [id]
+  );
+};
+
+const createHistoryRecord = async ({ employeeId, department, location }) => {
+  await db.query(
+    `INSERT INTO employee_location_history (employee_id, department, location, start_date)
+     VALUES ($1, $2, $3, NOW())`,
+    [employeeId, department, location]
+  );
+};
+
+module.exports = {
+  findAll,
+  findByEmail,
+  create,
+  update,
+  deleteById,
+  getActiveHistory,
+  closeHistoryRecord,
+  createHistoryRecord,
+};
