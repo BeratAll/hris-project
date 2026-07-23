@@ -172,4 +172,14 @@ export const settingsAPI = {
   update: (key, value) => api.put(`/settings/${key}`, { value }),
 };
 
+/**
+ * Advances API — Avans & Harcama Talepleri endpoint'leri
+ */
+export const advancesAPI = {
+  getAll: () => api.get('/advances'),
+  create: (data) => api.post('/advances', data),
+  approve: (id) => api.put(`/advances/${id}/approve`),
+  reject: (id, rejectionReason) => api.put(`/advances/${id}/reject`, { rejectionReason }),
+};
+
 export default api;

@@ -342,6 +342,47 @@ INSERT INTO system_settings (key, value, description) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 -- =============================================
+-- 12. ADVANCES (AVANS & HARCAMA TALEPLERİ) TABLOSU
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS advances (
+    id                      UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
+    employee_id             UUID            NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount                  NUMERIC(12,2)   NOT NULL,
+    reason                  TEXT            NOT NULL,
+    status                  VARCHAR(50)     NOT NULL DEFAULT 'PENDING_MANAGER_APPROVAL',
+    request_date            TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    payment_date            TIMESTAMPTZ     DEFAULT NULL,
+    manager_approved_by     UUID            REFERENCES users(id) ON DELETE SET NULL,
+    hr_approved_by          UUID            REFERENCES users(id) ON DELETE SET NULL,
+    gm_approved_by          UUID            REFERENCES users(id) ON DELETE SET NULL,
+    finance_paid_by         UUID            REFERENCES users(id) ON DELETE SET NULL,
+    rejected_by             UUID            REFERENCES users(id) ON DELETE SET NULL,
+    rejection_reason        TEXT            DEFAULT NULL,
+    created_at              TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at              TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+-- Index'ler
+CREATE INDEX IF NOT EXISTS idx_advances_employee_id ON advances(employee_id);
+CREATE INDEX IF NOT EXISTS idx_advances_status ON advances(status);
+
+-- Trigger for advances updated_at
+CREATE TRIGGER trg_advances_updated_at
+    BEFORE UPDATE ON advances
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Seed Advances
+INSERT INTO advances (employee_id, amount, reason, status)
+VALUES (
+    (SELECT id FROM users WHERE email = 'calisan@hris.com' LIMIT 1),
+    5000.00,
+    'Kişisel acil masraflar için avans talebi',
+    'PENDING_MANAGER_APPROVAL'
+) ON CONFLICT DO NOTHING;
+
+-- =============================================
 -- TAMAMLANDI
 -- =============================================
 -- Test kullanıcıları:

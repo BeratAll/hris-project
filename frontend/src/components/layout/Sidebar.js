@@ -24,6 +24,7 @@ import {
   Assessment as ReportIcon,
   Settings as SettingsIcon,
   Security as AuditIcon,
+  AttachMoney as AdvanceIcon,
 } from '@mui/icons-material';
 import { selectUserRole } from '@/store/slices/authSlice';
 
@@ -83,6 +84,12 @@ const MENU_ITEMS = [
         path: '/payroll',
         icon: <PayrollIcon />,
         allowedRoles: ['super_admin', 'hr_manager', 'finance', 'general_manager', 'employee'],
+      },
+      {
+        label: 'Avans & Harcama',
+        path: '/advances',
+        icon: <AdvanceIcon />,
+        allowedRoles: ['super_admin', 'hr_manager', 'finance', 'general_manager', 'site_chief', 'dept_manager', 'employee'],
       },
     ],
   },
