@@ -3,6 +3,7 @@
 const bcrypt = require('bcryptjs');
 const AppError = require('../../utils/appError.util');
 const employeesRepository = require('./employees.repository');
+const assetsRepository = require('../assets/assets.repository');
 const { createAuditEntry } = require('../../middlewares/auditLog.middleware');
 
 const SALT_ROUNDS = 12;
@@ -132,6 +133,12 @@ const updateEmployee = async (id, { fullName, email, department, location }, cre
  * Çalışanı veritabanında pasif duruma getirir (soft delete).
  */
 const deleteEmployee = async (id, creatorId, ipAddress = null) => {
+  // Offboarding zimmet kontrolü
+  const activeAssetsCount = await assetsRepository.countInUseByEmployeeId(id);
+  if (activeAssetsCount > 0) {
+    throw new AppError('Çalışanın üzerinde iade edilmemiş zimmetli demirbaşlar bulunmaktadır. Önce zimmetleri iade almalısınız.', 400);
+  }
+
   const employee = await employeesRepository.deleteById(id);
 
   if (!employee) {

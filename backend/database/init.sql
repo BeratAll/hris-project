@@ -383,12 +383,48 @@ VALUES (
 ) ON CONFLICT DO NOTHING;
 
 -- =============================================
+-- 13. ASSETS (ZİMMET VE DEMİRBAŞ TAKİBİ) TABLOSU
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS assets (
+    id              UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
+    employee_id     UUID            NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    asset_name      VARCHAR(100)    NOT NULL,
+    asset_type      VARCHAR(50)     NOT NULL,
+    serial_number   VARCHAR(100)    DEFAULT NULL,
+    issue_date      DATE            NOT NULL DEFAULT CURRENT_DATE,
+    return_date     DATE            DEFAULT NULL,
+    status          VARCHAR(20)     NOT NULL DEFAULT 'IN_USE',
+    created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_assets_employee_id ON assets(employee_id);
+CREATE INDEX IF NOT EXISTS idx_assets_status ON assets(status);
+
+-- Trigger for assets updated_at
+CREATE TRIGGER trg_assets_updated_at
+    BEFORE UPDATE ON assets
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Seed Assets
+INSERT INTO assets (employee_id, asset_name, asset_type, serial_number, status)
+VALUES (
+    (SELECT id FROM users WHERE email = 'calisan@hris.com' LIMIT 1),
+    'MacBook Pro 16 M3 Max',
+    'laptop',
+    'C02F12345678',
+    'IN_USE'
+) ON CONFLICT DO NOTHING;
+
+-- =============================================
 -- TAMAMLANDI
 -- =============================================
 -- Test kullanıcıları:
 -- ┌────────────────────┬──────────────┬───────────────┐
 -- │ E-posta            │ Şifre        │ Rol           │
--- ├────────────────────┼──────────────┼───────────────┐
+-- ├────────────────────┼──────────────┼───────────────┤
 -- │ admin@hris.com     │ 123456       │ super_admin   │
 -- │ ik@hris.com        │ 123456       │ hr_manager    │
 -- │ santiye@hris.com   │ 123456       │ site_chief    │
