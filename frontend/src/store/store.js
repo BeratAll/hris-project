@@ -8,6 +8,7 @@ import departmentReducer from './slices/departmentSlice';
 import siteReducer from './slices/siteSlice';
 import settingsReducer from './slices/settingsSlice';
 import advanceReducer from './slices/advanceSlice';
+import assetReducer from './slices/assetSlice';
 
 /**
  * Redux Store Konfigürasyonu
@@ -28,6 +29,7 @@ const store = configureStore({
     sites: siteReducer,
     settings: settingsReducer,
     advances: advanceReducer,
+    assets: assetReducer,
   },
 
   // Middleware — serileştirilemez veri uyarılarını kontrol et

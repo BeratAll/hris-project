@@ -182,4 +182,13 @@ export const advancesAPI = {
   reject: (id, rejectionReason) => api.put(`/advances/${id}/reject`, { rejectionReason }),
 };
 
+/**
+ * Assets API — Zimmet ve Demirbaş Yönetimi endpoint'leri
+ */
+export const assetsAPI = {
+  getAll: () => api.get('/assets'),
+  create: (data) => api.post('/assets', data),
+  return: (id) => api.put(`/assets/${id}/return`),
+};
+
 export default api;

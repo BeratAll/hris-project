@@ -25,6 +25,7 @@ import {
   Settings as SettingsIcon,
   Security as AuditIcon,
   AttachMoney as AdvanceIcon,
+  Devices as AssetIcon,
 } from '@mui/icons-material';
 import { selectUserRole } from '@/store/slices/authSlice';
 
@@ -90,6 +91,12 @@ const MENU_ITEMS = [
         path: '/advances',
         icon: <AdvanceIcon />,
         allowedRoles: ['super_admin', 'hr_manager', 'finance', 'general_manager', 'site_chief', 'dept_manager', 'employee'],
+      },
+      {
+        label: 'Zimmet Takibi',
+        path: '/assets',
+        icon: <AssetIcon />,
+        allowedRoles: ['super_admin', 'hr_manager', 'general_manager', 'employee'],
       },
     ],
   },
