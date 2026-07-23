@@ -6,6 +6,7 @@ import payrollReducer from './slices/payrollSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import departmentReducer from './slices/departmentSlice';
 import siteReducer from './slices/siteSlice';
+import settingsReducer from './slices/settingsSlice';
 
 /**
  * Redux Store Konfigürasyonu
@@ -24,6 +25,7 @@ const store = configureStore({
     dashboard: dashboardReducer,
     departments: departmentReducer,
     sites: siteReducer,
+    settings: settingsReducer,
   },
 
   // Middleware — serileştirilemez veri uyarılarını kontrol et

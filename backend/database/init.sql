@@ -314,12 +314,40 @@ SELECT id, department, NULL, created_at FROM users
 ON CONFLICT DO NOTHING;
 
 -- =============================================
+-- 11. SYSTEM SETTINGS (SİSTEM YAPILANDIRMA) TABLOSU
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS system_settings (
+    key             VARCHAR(100)    PRIMARY KEY,
+    value           JSONB           NOT NULL,
+    description     TEXT            DEFAULT NULL,
+    updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+-- Seed Settings
+INSERT INTO system_settings (key, value, description) VALUES
+('leave_policy', '{"types": ["Yıllık İzin", "Sağlık İzni", "Mazeret İzni"], "seniorityRates": [{"minYears": 0, "maxYears": 5, "days": 14}, {"minYears": 5, "maxYears": 15, "days": 20}, {"minYears": 15, "maxYears": 99, "days": 26}]}', 'İzin politikaları ve kıdem bazlı gün sayısı kuralları')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO system_settings (key, value, description) VALUES
+('payroll_params', '{"taxRates": [{"rate": 15, "threshold": 110000}, {"rate": 20, "threshold": 230000}, {"rate": 27, "threshold": 870000}, {"rate": 35, "threshold": 3000000}, {"rate": 40, "threshold": 99999999}], "sgkEmployeeRate": 14, "sgkEmployerRate": 20.5, "unemploymentEmployeeRate": 1, "unemploymentEmployerRate": 2}', 'Vergi dilimleri, SGK ve işsizlik sigortası çalışan/işveren payı oranları')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO system_settings (key, value, description) VALUES
+('approval_workflows', '{"leave": ["dept_manager", "hr_manager", "general_manager"], "advance": ["dept_manager", "hr_manager", "general_manager"]}', 'İzin, avans ve harcama onay akış sıraları')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO system_settings (key, value, description) VALUES
+('deduction_rules', '{"allowMealDeductions": false, "defaultMealAllowance": 150, "allowAdvanceDeductions": true}', 'Maaş kesinti ve ek ödeme parametreleri')
+ON CONFLICT (key) DO NOTHING;
+
+-- =============================================
 -- TAMAMLANDI
 -- =============================================
 -- Test kullanıcıları:
 -- ┌────────────────────┬──────────────┬───────────────┐
 -- │ E-posta            │ Şifre        │ Rol           │
--- ├────────────────────┼──────────────┼───────────────┤
+-- ├────────────────────┼──────────────┼───────────────┐
 -- │ admin@hris.com     │ 123456       │ super_admin   │
 -- │ ik@hris.com        │ 123456       │ hr_manager    │
 -- │ santiye@hris.com   │ 123456       │ site_chief    │

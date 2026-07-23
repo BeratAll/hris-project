@@ -21,6 +21,7 @@ const payrollRoutes = require('./modules/payroll/payroll.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const departmentRoutes = require('./modules/departments/departments.routes');
 const siteRoutes = require('./modules/sites/sites.routes');
+const settingRoutes = require('./modules/settings/settings.routes');
 
 // --- Express Uygulaması ---
 const app = express();
@@ -113,6 +114,7 @@ app.use(`${config.apiPrefix}/payroll`, payrollRoutes);
 app.use(`${config.apiPrefix}/dashboard`, dashboardRoutes);
 app.use(`${config.apiPrefix}/departments`, departmentRoutes);
 app.use(`${config.apiPrefix}/sites`, siteRoutes);
+app.use(`${config.apiPrefix}/settings`, settingRoutes);
 // app.use(`${config.apiPrefix}/leaves`, leaveRoutes);
 // app.use(`${config.apiPrefix}/payroll`, payrollRoutes);
 // app.use(`${config.apiPrefix}/departments`, departmentRoutes);

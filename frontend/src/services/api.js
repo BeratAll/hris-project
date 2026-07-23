@@ -164,4 +164,12 @@ export const sitesAPI = {
   delete: (id) => api.delete(`/sites/${id}`),
 };
 
+/**
+ * Settings API — Sistem Yapılandırma endpoint'leri
+ */
+export const settingsAPI = {
+  getAll: () => api.get('/settings'),
+  update: (key, value) => api.put(`/settings/${key}`, { value }),
+};
+
 export default api;
